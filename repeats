@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 This is a jiffy little python script that takes a base path as its argument
-and prints the paths of identical files to stdout, separated by ':'.
+and prints the paths of identical files to stdout, separated by `:`.
 
 How it works
 ------------
