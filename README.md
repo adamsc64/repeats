@@ -19,5 +19,6 @@ How to use it
 
 #### How to install it
 You probably just want to symlink it into a directory in your PATH.
+
     $ git clone <repo>
     $ ln -s /path/to/my/repos/repeats/repeats ~/bin/repeats
