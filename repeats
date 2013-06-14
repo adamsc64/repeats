@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+"""
+This is a jiffy little python script that takes a base path as its argument
+and prints the paths of identical files to stdout, separated by ':'.
+
+How it works
+------------
+
+The script calculates the MD5 checksums of all the files of the same size
+underneath the base path I use as my argument. If these MD5s match, the path
+is printed.
+
+How to use it
+-------------
+### List identical pictures in my album.
+    $ ./repeats ~/Dropbox/Chris/album/
+        ~/Dropbox/Chris/album/_import/IMG_0034.JPG:~/Dropbox/Chris/album/my-trip/IMG_0034.JPG
+
+### Delete identical pictures in my album _import directory.
+    $ ./repeats ~/Dropbox/Chris/album/ | cut -d : -f 1 | grep '\/_import\/' | xargs rm
+"""
+import hashlib
+import os
+import os.path
+import sys
+from collections import defaultdict
+
+
+def print_repeats(where):
+    """
+    Given a path ``where``, print out identical files.
+    """
+    groups = find_md5_same(where)
+    for same_list in groups:
+        print(":".join(same_list))
+
+
+def calculate_md5(path):
+    """
+    Returns the MD5 hash for a file at ``path``.
+    """
+
+    md5 = hashlib.md5()
+    with open(path) as openfile:
+        while True:
+            buf = openfile.read(128)
+            if not buf:
+                break
+            md5.update(buf)
+    return md5.hexdigest()
+
+
+def find_md5_same(where):
+    """
+    Finds all files with the same MD5 descending down from starting path
+    ``where``. Only calculates MD5s for files that have the same size.
+    """
+    files_by_size = find_files_by_size(where)
+    repeats = []
+    paths_by_digest = defaultdict(list)
+    for size in files_by_size:
+        paths = files_by_size[size]
+        if len(paths) > 1:
+            md5s = []
+            for path in paths:
+                digest = calculate_md5(path)
+                if digest in md5s:
+                    repeats.append(digest)
+
+                md5s.append(digest)
+                paths_by_digest[digest].append(path)
+
+    repeats = set(repeats)
+    groups = [paths_by_digest[digest] for digest in repeats]
+    return groups
+
+
+def find_files_by_size(where):
+    """
+    Groups files by size.
+    """
+    files_by_size = defaultdict(list)
+
+    filerecords = os.walk(where)
+    for record in filerecords:
+        dirpath, dirnames, filenames = record
+        for name in filenames:
+            relative_path = os.path.join(dirpath, name)
+            size = os.path.getsize(relative_path)
+            files_by_size[size].append(relative_path)
+    return files_by_size
+
+if __name__ == "__main__":
+    try:
+        where = sys.argv[1]
+    except IndexError:
+        where = "./"
+    print_repeats(where)
