@@ -29,29 +29,6 @@ def main(where):
         print(line)
 
 
-def group_by(iterable, keyfunc):
-    groups = defaultdict(list)
-    for iterated in iterable:
-        result = keyfunc(iterated)
-        groups[result].append(iterated)
-    return groups
-
-
-def by_size(candidates):
-    return apply_limiter(candidates, os.path.getsize)
-
-
-def by_md5(candidates):
-    return apply_limiter(candidates, calculate_md5)
-
-
-def get_all_files(where):
-    filerecords = os.walk(where)
-    for dirpath, dirnames, filenames in filerecords:
-        for name in filenames:
-            yield os.path.join(dirpath, name)
-
-
 def repeats(where):
     limiters = [by_size, by_md5]
     all_files = list(get_all_files(where))
@@ -61,6 +38,21 @@ def repeats(where):
     matches = groups
     for same_list in matches:
         yield(DELIMINATOR.join(same_list))
+
+
+def get_all_files(where):
+    filerecords = os.walk(where)
+    for dirpath, dirnames, filenames in filerecords:
+        for name in filenames:
+            yield os.path.join(dirpath, name)
+
+
+def by_size(candidates):
+    return apply_limiter(candidates, os.path.getsize)
+
+
+def by_md5(candidates):
+    return apply_limiter(candidates, calculate_md5)
 
 
 def calculate_md5(path):
@@ -85,6 +77,14 @@ def apply_limiter(groups_of_possible_matches, limiter):
             if len(element) > 1:
                 results.append(element)
     return results
+
+
+def group_by(iterable, keyfunc):
+    groups = defaultdict(list)
+    for iterated in iterable:
+        result = keyfunc(iterated)
+        groups[result].append(iterated)
+    return groups
 
 
 if __name__ == "__main__":
