@@ -19,7 +19,6 @@ import os
 import os.path
 import sys
 from collections import defaultdict
-from multiprocessing import Pool
 
 
 DELIMINATOR = "\t"
@@ -58,17 +57,17 @@ def get_all_files(where):
 def repeats(where):
     limiters = [by_size, by_md5]
     all_files = list(get_all_files(where))
-    possible_matches = [all_files]
+    groups_of_possible_matches = [all_files]
     for limiter in limiters:
         next_matches = []
-        for possible_match in possible_matches:
+        for possible_match in groups_of_possible_matches:
             new_elements = limiter(possible_match)
             for element in new_elements:
                 if len(element) > 1:
                     next_matches.append(element)
-        possible_matches = next_matches
-    groups = possible_matches
-    for same_list in groups:
+        groups_of_possible_matches = next_matches
+    matches = groups_of_possible_matches
+    for same_list in matches:
         yield(DELIMINATOR.join(same_list))
 
 
