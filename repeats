@@ -14,6 +14,7 @@ How to use it
     $ ./repeats ~/album
         ~/album/_import/IMG_0034.JPG	~/album/my-trip/IMG_0034.JPG
 """
+import functools
 import hashlib
 import os
 import os.path
@@ -47,12 +48,33 @@ def get_all_files(where):
             yield os.path.join(dirpath, name)
 
 
+def get_limiters():
+    return {
+        'by_size': os.path.getsize,
+        'by_md5': calculate_md5,
+    }
+
+
+def apply_limiter(groups_of_possible_matches, limiter):
+    results = []
+    for possible_match in groups_of_possible_matches:
+        keyfunc = get_limiters()[limiter]
+        new_elements = group_by(possible_match, keyfunc).values()
+        for element in new_elements:
+            if len(element) > 1:
+                results.append(element)
+    return results
+
+
+_by_size = functools.partial(apply_limiter, limiter='by_size')
 def by_size(candidates):
-    return apply_limiter(candidates, os.path.getsize)
+    return _by_size(candidates)
 
 
+_by_md5 = functools.partial(apply_limiter, limiter='by_md5')
 def by_md5(candidates):
-    return apply_limiter(candidates, calculate_md5)
+    p = Pool(5)
+    return _by_md5(candidates)
 
 
 def calculate_md5(path):
@@ -67,16 +89,6 @@ def calculate_md5(path):
                 break
             md5.update(buf)
     return md5.hexdigest()
-
-
-def apply_limiter(groups_of_possible_matches, limiter):
-    results = []
-    for possible_match in groups_of_possible_matches:
-        new_elements = group_by(possible_match, limiter).values()
-        for element in new_elements:
-            if len(element) > 1:
-                results.append(element)
-    return results
 
 
 def group_by(iterable, keyfunc):
