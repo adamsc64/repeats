@@ -77,20 +77,6 @@ def calculate_md5(path):
     return md5.hexdigest()
 
 
-def get_files_by_size(where):
-    """
-    Walks ``where`` and groups files by size.
-    """
-    files_by_size = defaultdict(list)
-    filerecords = os.walk(where)
-    for dirpath, dirnames, filenames in filerecords:
-        for name in filenames:
-            relative_path = os.path.join(dirpath, name)
-            size = os.path.getsize(relative_path)
-            files_by_size[size].append(relative_path)
-    return files_by_size
-
-
 def apply_limiter(groups_of_possible_matches, limiter):
     results = []
     for possible_match in groups_of_possible_matches:
