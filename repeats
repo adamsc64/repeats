@@ -38,13 +38,11 @@ def group_by(iterable, keyfunc):
 
 
 def by_size(candidates):
-    groups = group_by(candidates, os.path.getsize)
-    return groups.values()
+    return apply_limiter(candidates, os.path.getsize)
 
 
 def by_md5(candidates):
-    groups = group_by(candidates, calculate_md5)
-    return groups.values()
+    return apply_limiter(candidates, calculate_md5)
 
 
 def get_all_files(where):
@@ -57,16 +55,10 @@ def get_all_files(where):
 def repeats(where):
     limiters = [by_size, by_md5]
     all_files = list(get_all_files(where))
-    groups_of_possible_matches = [all_files]
-    for limiter in limiters:
-        next_matches = []
-        for possible_match in groups_of_possible_matches:
-            new_elements = limiter(possible_match)
-            for element in new_elements:
-                if len(element) > 1:
-                    next_matches.append(element)
-        groups_of_possible_matches = next_matches
-    matches = groups_of_possible_matches
+    groups = [all_files]
+    groups = by_size(groups)
+    groups = by_md5(groups)
+    matches = groups
     for same_list in matches:
         yield(DELIMINATOR.join(same_list))
 
@@ -97,6 +89,16 @@ def get_files_by_size(where):
             size = os.path.getsize(relative_path)
             files_by_size[size].append(relative_path)
     return files_by_size
+
+
+def apply_limiter(groups_of_possible_matches, limiter):
+    results = []
+    for possible_match in groups_of_possible_matches:
+        new_elements = group_by(possible_match, limiter).values()
+        for element in new_elements:
+            if len(element) > 1:
+                results.append(element)
+    return results
 
 
 if __name__ == "__main__":
