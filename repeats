@@ -19,6 +19,7 @@ import os
 import os.path
 import sys
 from collections import defaultdict
+from multiprocessing import Pool
 
 
 DELIMINATOR = "\t"
@@ -60,14 +61,12 @@ def repeats(where):
     possible_matches = [all_files]
     for limiter in limiters:
         next_matches = []
-        while possible_matches:
-            element = possible_matches.pop()
-            new_elements = limiter(element)
+        for possible_match in possible_matches:
+            new_elements = limiter(possible_match)
             for element in new_elements:
                 if len(element) > 1:
                     next_matches.append(element)
         possible_matches = next_matches
-        pass
     groups = possible_matches
     for same_list in groups:
         yield(DELIMINATOR.join(same_list))
