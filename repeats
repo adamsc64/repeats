@@ -34,6 +34,7 @@ def repeats(where):
     all_files = list(get_all_files(where))
     groups = [all_files]
     groups = by_size(groups)
+    groups = by_first_bytes(groups)
     groups = by_md5(groups)
     matches = groups
     for same_list in matches:
@@ -51,8 +52,18 @@ def by_size(candidates):
     return apply_limiter(candidates, os.path.getsize)
 
 
+def by_first_bytes(candidates):
+    return apply_limiter(candidates, get_first_bytes)
+
+
 def by_md5(candidates):
     return apply_limiter(candidates, calculate_md5)
+
+
+def get_first_bytes(path):
+    BUFFER_SIZE = 1024 * 8
+    with open(path) as openfile:
+        return openfile.read(BUFFER_SIZE)
 
 
 def calculate_md5(path):
