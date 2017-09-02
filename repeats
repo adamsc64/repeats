@@ -18,10 +18,12 @@ import hashlib
 import os
 import os.path
 import sys
+import time
 from collections import defaultdict
 
 
 DELIMINATOR = "\t"
+PROFILE_MODE = False
 
 
 def main(where):
@@ -47,15 +49,30 @@ def get_all_files(where):
         for name in filenames:
             yield os.path.join(dirpath, name)
 
+def timer(func):
+    if not PROFILE_MODE:
+        return func
+    def timer_wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        finish = time.time()
+        duration = finish - start
+        print "%s took %s" % (func.__name__, duration)
+        return result
+    return timer_wrapper
 
+
+@timer
 def by_size(candidates):
     return apply_limiter(candidates, os.path.getsize)
 
 
+@timer
 def by_first_bytes(candidates):
     return apply_limiter(candidates, get_first_bytes)
 
 
+@timer
 def by_md5(candidates):
     return apply_limiter(candidates, calculate_md5)
 
