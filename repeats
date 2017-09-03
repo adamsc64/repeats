@@ -32,7 +32,6 @@ def main(where):
 
 
 def repeats(where):
-    limiters = [by_size, by_md5]
     all_files = list(get_all_files(where))
     groups = [all_files]
     groups = by_size(groups)
@@ -49,9 +48,11 @@ def get_all_files(where):
         for name in filenames:
             yield os.path.join(dirpath, name)
 
+
 def timer(func):
     if not PROFILE_MODE:
         return func
+
     def timer_wrapper(*args, **kwargs):
         start = time.time()
         result = func(*args, **kwargs)
@@ -59,6 +60,7 @@ def timer(func):
         duration = finish - start
         print "%s took %s" % (func.__name__, duration)
         return result
+
     return timer_wrapper
 
 
