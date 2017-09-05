@@ -14,24 +14,24 @@ How to use it
     $ ./repeats ~/album
         ~/album/_import/IMG_0034.JPG	~/album/my-trip/IMG_0034.JPG
 """
+import argparse
 import hashlib
 import os
 import os.path
-import sys
 import time
 from collections import defaultdict
 
 
-DELIMINATOR = "\t"
+DEFAULT_DELIMINER = "\t"
 PROFILE_MODE = False
 
 
-def main(where):
-    for line in repeats(where):
+def main(where, deliminer):
+    for line in repeats(where, deliminer):
         print(line)
 
 
-def repeats(where):
+def repeats(where, deliminer):
     all_files = list(get_all_files(where))
     groups = [all_files]
     groups = by_size(groups)
@@ -39,7 +39,7 @@ def repeats(where):
     groups = by_md5(groups)
     matches = groups
     for same_list in matches:
-        yield(DELIMINATOR.join(same_list))
+        yield(deliminer.join(same_list))
 
 
 def get_all_files(where):
@@ -117,9 +117,22 @@ def group_by(iterable, keyfunc):
     return groups
 
 
+def get_args():
+    parser = argparse.ArgumentParser(
+        description='finds files with identical contents')
+    parser.add_argument(
+        '-d', '--deliminer', type=str, default=DEFAULT_DELIMINER,
+        help='deliminer between matching filenames')
+    parser.add_argument('directory',
+            type=str,
+            help='location',
+            default='.',
+            )
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    try:
-        where = sys.argv[1]
-    except IndexError:
-        where = "./"
-    main(where)
+    args = get_args()
+    main(where=args.directory,
+         deliminer=args.deliminer,
+         )
