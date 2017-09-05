@@ -14,6 +14,7 @@ How to use it
     $ ./repeats ~/album
         ~/album/_import/IMG_0034.JPG	~/album/my-trip/IMG_0034.JPG
 """
+import argparse
 import hashlib
 import os
 import os.path
@@ -22,11 +23,11 @@ import time
 from collections import defaultdict
 
 
-DELIMINATOR = "\t"
+DEFAULT_DELIMINATOR = "\t"
 PROFILE_MODE = False
 
 
-def main(where):
+def main(locations):
     for line in repeats(where):
         print(line)
 
@@ -39,7 +40,7 @@ def repeats(where):
     groups = by_md5(groups)
     matches = groups
     for same_list in matches:
-        yield(DELIMINATOR.join(same_list))
+        yield(deliminater.join(same_list))
 
 
 def get_all_files(where):
@@ -117,9 +118,25 @@ def group_by(iterable, keyfunc):
     return groups
 
 
-if __name__ == "__main__":
+def get_args():
     try:
         where = sys.argv[1]
     except IndexError:
         where = "./"
-    main(where)
+
+    parser = argparse.ArgumentParser(
+        description='finds files with identical contents')
+    parser.add_argument(
+        '--delim', type=str, default=DEFAULT_DELIMINATOR,
+        help='deliminer between matching filenames')
+    parser.add_argument('directory',
+            type=str,
+            help='location',
+            default='.',
+            )
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = get_args()
+    main(args.directory)
