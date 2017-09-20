@@ -26,14 +26,17 @@ DEFAULT_DELIMINER = "\t"
 PROFILE_MODE = False
 
 
-def main(where, deliminer):
-    for line in repeats(where, deliminer):
+def main(directories, deliminer):
+    locations = []
+    for directory in directories:
+        locations += list(get_all_files(directory))
+    locations = set(locations)
+    for line in repeats(locations, deliminer):
         print(line)
 
 
-def repeats(where, deliminer):
-    all_files = list(get_all_files(where))
-    groups = [all_files]
+def repeats(locations, deliminer):
+    groups = [locations]
     groups = by_size(groups)
     groups = by_first_bytes(groups)
     groups = by_md5(groups)
@@ -46,7 +49,9 @@ def get_all_files(where):
     filerecords = os.walk(where)
     for dirpath, dirnames, filenames in filerecords:
         for name in filenames:
-            yield os.path.join(dirpath, name)
+            path = os.path.join(dirpath, name)
+            path = os.path.abspath(path)
+            yield path
 
 
 def timer(func):
@@ -124,15 +129,16 @@ def get_args():
         '-d', '--deliminer', type=str, default=DEFAULT_DELIMINER,
         help='deliminer between matching filenames')
     parser.add_argument('directory',
-            type=str,
-            help='location',
-            default='.',
-            )
+                        type=str,
+                        default='.',
+                        help='a location on disk to search',
+                        nargs='+',
+                        )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = get_args()
-    main(where=args.directory,
+    main(directories=args.directory,
          deliminer=args.deliminer,
          )
