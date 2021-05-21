@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Prints paths of identical files to stdout, separated by tab (\t).
 
@@ -63,7 +63,7 @@ def timer(func):
         result = func(*args, **kwargs)
         finish = time.time()
         duration = finish - start
-        print "%s took %s" % (func.__name__, duration)
+        print(f"{func.__name__} took {duration}")
         return result
 
     return timer_wrapper
@@ -86,7 +86,7 @@ def by_md5(candidates):
 
 def get_first_bytes(path):
     BUFFER_SIZE = 1024 * 8
-    with open(path) as openfile:
+    with open(path, 'rb') as openfile:
         return openfile.read(BUFFER_SIZE)
 
 
@@ -95,7 +95,7 @@ def calculate_md5(path):
     Returns the MD5 hash for a file at ``path``.
     """
     md5 = hashlib.md5()
-    with open(path) as openfile:
+    with open(path, 'rb') as openfile:
         while True:
             buf = openfile.read(128)
             if not buf:
